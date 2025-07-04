@@ -1,0 +1,23 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+#root,
+.App {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background: #fcfefe;
+}
+
+.App {
+  min-height: 100vh;
+  width: 100vw;
+  background: #fcfefe;
+}
