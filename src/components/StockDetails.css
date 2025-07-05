@@ -160,20 +160,36 @@
   color: #495057;
 }
 
+/* Kategori ve Dönem Select Kutusu Geliştirme */
 .filter-select {
-  padding: 12px 16px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  font-size: 14px;
-  min-width: 180px;
-  background: white;
-  transition: all 0.2s ease;
+  padding: 14px 18px;
+  border: 2px solid #1976d2;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #222;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.06);
 }
-
 .filter-select:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.13);
+}
+
+.filter-select option {
+  font-size: 17px;
+  font-weight: 600;
+  color: #222;
+  background: #f8f9fa;
+  padding: 12px 18px;
+}
+
+.filter-select option:checked,
+.filter-select option:hover {
+  background: #e3f2fd;
+  color: #0d47a1;
 }
 
 /* Satış Özeti */
@@ -251,93 +267,118 @@
   overflow-x: auto;
 }
 
+/* TABLO BOYUT VE HİZALAMA GÜNCELLEMELERİ */
 .products-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 17px;
+  line-height: 1.7;
 }
 
+/* TABLO YAZI DETAYLARI */
 .products-table th {
   background: #f8f9fa;
-  padding: 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #495057;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 13px;
+  padding: 20px 12px;
+  text-align: center;
+  font-weight: 800;
+  color: #343a40;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 16px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .products-table td {
-  padding: 16px;
+  padding: 20px 12px;
   border-bottom: 1px solid #f1f3f4;
   vertical-align: middle;
+  text-align: center;
+  font-size: 17px;
+  background: transparent;
+  transition: background 0.2s;
 }
 
 .products-table tr.even {
   background: #f8f9fa;
 }
-
 .products-table tr.odd {
-  background: white;
+  background: #fff;
 }
-
 .products-table tr:hover {
   background: #e3f2fd;
 }
 
 .product-name {
-  font-weight: 600;
-  color: #333;
+  font-weight: 900;
+  color: #1a237e;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
 }
 
 .product-category {
   color: #6c757d;
-  font-size: 13px;
-}
-
-.product-brand {
-  color: #495057;
+  font-size: 16px;
+  font-style: italic;
   font-weight: 500;
 }
 
-.product-stock {
-  text-align: center;
-  font-weight: 600;
-  color: #333;
+.product-stock,
+.product-price {
+  font-size: 17px;
+  font-weight: 700;
+  color: #212529;
 }
 
 .product-price {
-  text-align: right;
-  font-weight: 600;
-  color: #333;
+  letter-spacing: 0.2px;
 }
 
 .profit-margin {
-  text-align: right;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
   color: #28a745;
+  letter-spacing: 0.5px;
+}
+
+.profit-margin::before {
+  content: "%";
+  margin-right: 2px;
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  min-width: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 90px;
+  height: 38px;
+  box-sizing: border-box;
+  letter-spacing: 0.5px;
 }
 
 .status-badge.normal {
   background: #d4edda;
   color: #155724;
 }
-
 .status-badge.critical {
   background: #f8d7da;
   color: #721c24;
+}
+
+/* Seçim (highlight) rengi */
+.products-table td::selection,
+.products-table th::selection {
+  background: #b3e5fc;
+  color: #0d47a1;
+}
+
+/* Satır arası boşluk ve responsive */
+.products-table tr {
+  height: 56px;
 }
 
 /* Responsive Tasarım */
@@ -390,4 +431,90 @@
   .page-title {
     font-size: 20px;
   }
+}
+
+/* Loading ve Error Durumları */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: #6c757d;
+  font-size: 16px;
+  margin: 0;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.retry-button {
+  padding: 12px 24px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-button:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.info-message {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.info-message p {
+  margin: 0 0 10px 0;
+  color: #1976d2;
+  font-size: 14px;
+}
+
+.info-message p:last-child {
+  margin-bottom: 0;
+  font-weight: 500;
 }

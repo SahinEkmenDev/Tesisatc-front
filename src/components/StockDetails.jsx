@@ -8,154 +8,128 @@ import {
   DollarSign,
   AlertTriangle,
 } from "lucide-react";
-
-// Örnek stok verileri
-const stockData = [
-  {
-    id: 1,
-    name: "Vana",
-    category: "Tesisat",
-    subCategory: "Vanalar",
-    brand: "Viega",
-    unit: "Adet",
-    purchasePrice: 150,
-    salePrice: 220,
-    stock: 45,
-    minStock: 10,
-    monthlySales: [12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40],
-    quarterlySales: [45, 52, 58, 65],
-    sixMonthSales: [90, 105, 120],
-    yearlySales: [180, 220, 250, 280],
-  },
-  {
-    id: 2,
-    name: "Pompa",
-    category: "Tesisat",
-    subCategory: "Pompalar",
-    brand: "Grundfos",
-    unit: "Adet",
-    purchasePrice: 1200,
-    salePrice: 1800,
-    stock: 8,
-    minStock: 5,
-    monthlySales: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
-    quarterlySales: [12, 15, 18, 21],
-    sixMonthSales: [25, 30, 35],
-    yearlySales: [50, 60, 70, 80],
-  },
-  {
-    id: 3,
-    name: "Klozet",
-    category: "Vitrifiye",
-    subCategory: "Klozetler",
-    brand: "Vitra",
-    unit: "Adet",
-    purchasePrice: 800,
-    salePrice: 1200,
-    stock: 25,
-    minStock: 15,
-    monthlySales: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30],
-    quarterlySales: [30, 36, 42, 48],
-    sixMonthSales: [60, 72, 84],
-    yearlySales: [120, 144, 168, 192],
-  },
-  {
-    id: 4,
-    name: "Lavabo",
-    category: "Vitrifiye",
-    subCategory: "Lavabolar",
-    brand: "Eczacıbaşı",
-    unit: "Adet",
-    purchasePrice: 400,
-    salePrice: 650,
-    stock: 35,
-    minStock: 20,
-    monthlySales: [15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48],
-    quarterlySales: [54, 63, 72, 81],
-    sixMonthSales: [108, 126, 144],
-    yearlySales: [216, 252, 288, 324],
-  },
-  {
-    id: 5,
-    name: "Radyatör",
-    category: "Isıtma Soğutma",
-    subCategory: "Radyatörler",
-    brand: "Demirdöküm",
-    unit: "Adet",
-    purchasePrice: 350,
-    salePrice: 550,
-    stock: 60,
-    minStock: 25,
-    monthlySales: [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75],
-    quarterlySales: [75, 90, 105, 120],
-    sixMonthSales: [150, 180, 210],
-    yearlySales: [300, 360, 420, 480],
-  },
-];
+import { apiGet } from "../api";
 
 function StockDetails() {
   const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState("monthly");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [dashboardData, setDashboardData] = useState(null);
+  const [salesSummary, setSalesSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [salesLoading, setSalesLoading] = useState(true);
+  const [salesError, setSalesError] = useState(null);
 
-  // Toplam hesaplamalar
-  const totalProducts = stockData.length;
-  const totalStock = stockData.reduce((sum, item) => sum + item.stock, 0);
-  const totalPurchaseValue = stockData.reduce(
-    (sum, item) => sum + item.purchasePrice * item.stock,
-    0
-  );
-  const totalSaleValue = stockData.reduce(
-    (sum, item) => sum + item.salePrice * item.stock,
-    0
-  );
-  const criticalStock = stockData.filter(
-    (item) => item.stock <= item.minStock
-  ).length;
-
-  // Satış verilerini hesapla
-  const getSalesData = (period) => {
-    const periods = {
-      monthly: "monthlySales",
-      quarterly: "quarterlySales",
-      sixMonth: "sixMonthSales",
-      yearly: "yearlySales",
+  // Backend'den dashboard verilerini çek
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const data = await apiGet("api/Dashboard/stock-dashboard");
+        setDashboardData(data);
+        setError(null);
+      } catch (err) {
+        console.error("Dashboard verileri çekilirken hata:", err);
+        setError("Veriler yüklenirken bir hata oluştu");
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchDashboardData();
+  }, []);
 
-    const salesKey = periods[period];
-    const totalSales = stockData.reduce((sum, item) => {
-      const sales = item[salesKey];
-      return sum + sales[sales.length - 1];
-    }, 0);
+  // Satış özeti verisini çek
+  useEffect(() => {
+    const fetchSalesSummary = async () => {
+      try {
+        setSalesLoading(true);
+        const data = await apiGet("api/Sales/summary");
+        setSalesSummary(data);
+        setSalesError(null);
+      } catch (err) {
+        console.error("Satış özeti çekilirken hata:", err);
+        setSalesError("Satış özeti yüklenirken bir hata oluştu");
+      } finally {
+        setSalesLoading(false);
+      }
+    };
+    fetchSalesSummary();
+  }, []);
 
-    const totalRevenue = stockData.reduce((sum, item) => {
-      const sales = item[salesKey];
-      const lastSales = sales[sales.length - 1];
-      return sum + lastSales * item.salePrice;
-    }, 0);
+  // Loading durumu
+  if (loading) {
+    return (
+      <div className="stock-details-container">
+        <div className="stock-details-header">
+          <div className="header-left">
+            <button
+              className="back-button"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft size={20} />
+              Geri Dön
+            </button>
+            <h1 className="page-title">Stok Detayları</h1>
+          </div>
+        </div>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Veriler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
-    const totalCost = stockData.reduce((sum, item) => {
-      const sales = item[salesKey];
-      const lastSales = sales[sales.length - 1];
-      return sum + lastSales * item.purchasePrice;
-    }, 0);
+  // Hata durumu
+  if (error) {
+    return (
+      <div className="stock-details-container">
+        <div className="stock-details-header">
+          <div className="header-left">
+            <button
+              className="back-button"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft size={20} />
+              Geri Dön
+            </button>
+            <h1 className="page-title">Stok Detayları</h1>
+          </div>
+        </div>
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button
+            className="retry-button"
+            onClick={() => window.location.reload()}
+          >
+            Tekrar Dene
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-    const totalProfit = totalRevenue - totalCost;
+  // Backend'den gelen verileri kullan
+  const totalProducts = dashboardData?.totalProducts || 0;
+  const totalStock = dashboardData?.totalStock || 0;
+  const totalCostValue = dashboardData?.totalCostValue || 0;
+  const totalSaleValue = dashboardData?.totalSaleValue || 0;
+  const criticalStockCount = dashboardData?.criticalStockCount || 0;
 
-    return { totalSales, totalRevenue, totalCost, totalProfit };
-  };
-
-  const currentSalesData = getSalesData(selectedPeriod);
+  // Ürün detayları
+  const productDetails = dashboardData?.productDetails?.$values || [];
 
   // Kategori filtreleme
   const categories = [
     "all",
-    ...new Set(stockData.map((item) => item.category)),
+    ...new Set(productDetails.map((item) => item.category)),
   ];
+
   const filteredData =
     selectedCategory === "all"
-      ? stockData
-      : stockData.filter((item) => item.category === selectedCategory);
+      ? productDetails
+      : productDetails.filter((item) => item.category === selectedCategory);
 
   const periodLabels = {
     monthly: "1 Aylık",
@@ -163,6 +137,12 @@ function StockDetails() {
     sixMonth: "6 Aylık",
     yearly: "1 Yıllık",
   };
+
+  // Satış özeti kutuları için veriler
+  const totalSales = salesSummary?.totalSales || 0;
+  const totalRevenue = salesSummary?.totalRevenue || 0;
+  const totalCost = salesSummary?.totalCost || 0;
+  const totalProfit = salesSummary?.totalProfit || 0;
 
   return (
     <div className="stock-details-container">
@@ -210,7 +190,7 @@ function StockDetails() {
             <div className="card-content">
               <h3>Alış Değeri</h3>
               <div className="card-value">
-                {totalPurchaseValue.toLocaleString()} ₺
+                {totalCostValue.toLocaleString()} ₺
               </div>
             </div>
           </div>
@@ -233,7 +213,7 @@ function StockDetails() {
             </div>
             <div className="card-content">
               <h3>Kritik Stok</h3>
-              <div className="card-value">{criticalStock}</div>
+              <div className="card-value">{criticalStockCount}</div>
             </div>
           </div>
         </div>
@@ -275,32 +255,43 @@ function StockDetails() {
           <h3 className="section-title">
             {periodLabels[selectedPeriod]} Satış Özeti
           </h3>
-          <div className="sales-grid">
-            <div className="sales-item">
-              <div className="sales-value sales-total">
-                {currentSalesData.totalSales.toLocaleString()}
-              </div>
-              <div className="sales-label">Toplam Satış</div>
+          {salesLoading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Satış özeti yükleniyor...</p>
             </div>
-            <div className="sales-item">
-              <div className="sales-value sales-revenue">
-                {currentSalesData.totalRevenue.toLocaleString()} ₺
-              </div>
-              <div className="sales-label">Toplam Gelir</div>
+          ) : salesError ? (
+            <div className="error-container">
+              <p className="error-message">{salesError}</p>
             </div>
-            <div className="sales-item">
-              <div className="sales-value sales-cost">
-                {currentSalesData.totalCost.toLocaleString()} ₺
+          ) : (
+            <div className="sales-grid">
+              <div className="sales-item">
+                <div className="sales-value sales-total">
+                  {totalSales.toLocaleString()}
+                </div>
+                <div className="sales-label">Toplam Satış</div>
               </div>
-              <div className="sales-label">Toplam Maliyet</div>
-            </div>
-            <div className="sales-item">
-              <div className="sales-value sales-profit">
-                {currentSalesData.totalProfit.toLocaleString()} ₺
+              <div className="sales-item">
+                <div className="sales-value sales-revenue">
+                  {totalRevenue.toLocaleString()} ₺
+                </div>
+                <div className="sales-label">Toplam Gelir</div>
               </div>
-              <div className="sales-label">Toplam Kar</div>
+              <div className="sales-item">
+                <div className="sales-value sales-cost">
+                  {totalCost.toLocaleString()} ₺
+                </div>
+                <div className="sales-label">Toplam Maliyet</div>
+              </div>
+              <div className="sales-item">
+                <div className="sales-value sales-profit">
+                  {totalProfit.toLocaleString()} ₺
+                </div>
+                <div className="sales-label">Toplam Kar</div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Ürün Tablosu */}
@@ -312,7 +303,6 @@ function StockDetails() {
                 <tr>
                   <th>Ürün</th>
                   <th>Kategori</th>
-                  <th>Marka</th>
                   <th>Stok</th>
                   <th>Alış Fiyatı</th>
                   <th>Satış Fiyatı</th>
@@ -322,38 +312,30 @@ function StockDetails() {
               </thead>
               <tbody>
                 {filteredData.map((item, index) => {
-                  const profitMargin = (
-                    ((item.salePrice - item.purchasePrice) /
-                      item.purchasePrice) *
-                    100
-                  ).toFixed(1);
-                  const isCritical = item.stock <= item.minStock;
+                  const isCritical = item.status === "Kritik";
 
                   return (
                     <tr
-                      key={item.id}
+                      key={item.$id}
                       className={index % 2 === 0 ? "even" : "odd"}
                     >
                       <td className="product-name">{item.name}</td>
-                      <td className="product-category">
-                        {item.category} / {item.subCategory}
-                      </td>
-                      <td className="product-brand">{item.brand}</td>
+                      <td className="product-category">{item.category}</td>
                       <td className="product-stock">{item.stock}</td>
                       <td className="product-price">
-                        {item.purchasePrice.toLocaleString()} ₺
+                        {item.costPrice.toLocaleString()} ₺
                       </td>
                       <td className="product-price">
-                        {item.salePrice.toLocaleString()} ₺
+                        {item.price.toLocaleString()} ₺
                       </td>
-                      <td className="profit-margin">%{profitMargin}</td>
+                      <td className="profit-margin">{item.profitMargin}</td>
                       <td>
                         <span
                           className={`status-badge ${
                             isCritical ? "critical" : "normal"
                           }`}
                         >
-                          {isCritical ? "Kritik" : "Normal"}
+                          {item.status}
                         </span>
                       </td>
                     </tr>

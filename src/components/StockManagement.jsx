@@ -1112,7 +1112,7 @@ function StockManagement() {
     closeModal();
   };
 
-  const faturaOlustur = () => {
+  const faturaOlustur = async () => {
     const toplam = toplamHesapla();
     const fatura = {
       musteriAdi,
@@ -1124,8 +1124,32 @@ function StockManagement() {
       notlar: faturaNotlari,
       tarih: new Date().toLocaleDateString("tr-TR"),
     };
-    console.log("Fatura oluşturuldu:", fatura);
-    closeModal();
+    try {
+      // Her ürün için satış kaydı oluştur
+      for (const urun of faturaUrunler) {
+        await fetch(`${API_BASE_URL}/api/Sales`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId: urun.id,
+            quantity: urun.miktar,
+            costPrice: urun.alisFiyati,
+            salePrice: urun.satisFiyati,
+          }),
+        });
+      }
+      // Ürünleri tekrar çek (stok güncellensin)
+      const res = await fetch(`${API_BASE_URL}/api/Product`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.$values) {
+          setBackendProducts(data.$values);
+        }
+      }
+      closeModal();
+    } catch (err) {
+      alert("Satış kaydı oluşturulurken hata oluştu: " + (err.message || err));
+    }
   };
 
   return (
